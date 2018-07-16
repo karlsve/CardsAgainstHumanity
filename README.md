@@ -28,7 +28,7 @@ class SomeEndpoint(Endpoint):
 ```
 The client can then connect to the endpoint `ws://localhost:8765/somepath`.
 The methods are called by sending a JSON object with the appropriate method name e.g.
-```
+```json
 {
     "method": "someMethod"
 }
