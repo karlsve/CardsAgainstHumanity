@@ -4,8 +4,7 @@ A simple CardsAgainstHumanity implementation in python to act as a websocket ser
 ## wgl.py
 This is the websocket and database handling implementation.
 
-Example usage
-
+Sample usage
 ```python
 import asyncio
 from wgl import GameServer
@@ -27,10 +26,9 @@ class SomeEndpoint(Endpoint):
     async def someOtherMethod(self, gm):
         await self.send({"sent":gm["requiredParameter"]})
 ```
-
 The client can then connect to the endpoint `ws://localhost:8765/somepath`.
 The methods are called by sending a JSON object with the appropriate method name e.g.
-```json
+```
 {
     "method": "someMethod"
 }
