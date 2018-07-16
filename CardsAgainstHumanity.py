@@ -8,11 +8,11 @@ matches = []
 @cah.endpoint("/matches")
 class Matches(Endpoint):
 
-    @cah.method("/matches")
+    @cah.method()
     async def list(self, gm):
         await self.send(matches)
 
-    @cah.method("/matches", "MatchConfig")
+    @cah.method("MatchConfig")
     async def create(self, gm):
         gc = gm["MatchConfig"]
         id = len(matches)
@@ -22,7 +22,7 @@ class Matches(Endpoint):
 
 @cah.endpoint("/match")
 class Match(Endpoint):
-    @cah.method("/match", "id")
+    @cah.method("id")
     async def connect(self, gm):
         if 0 <= gm["id"] < len(matches):
             await self.send(matches[gm["id"]])
@@ -38,12 +38,12 @@ class Decks(Endpoint):
 
 @cah.endpoint("/deck")
 class Deck(Endpoint):
-    @cah.method("/deck", "id")
+    @cah.method("id")
     async def get(self, gm):
         print(gm["id"])
         pass
 
-    @cah.method("/deck", "DeckConfig")
+    @cah.method("DeckConfig")
     async def create(self, gm):
         pass
 
