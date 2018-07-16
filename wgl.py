@@ -2,7 +2,7 @@ import asyncio
 import json
 import sqlite3 as sql
 from types import FunctionType
-from typing import Dict, Any
+from typing import Dict
 
 import websockets as ws
 
@@ -11,7 +11,8 @@ class GameServer(object):
     def __init__(self, dbname, ip, port):
         self.ip = ip
         self.port = port
-        self.endpoints: Dict[str, Dict[str, Any]] = {}
+        self.endpoints: Dict[str, Endpoint.__class__] = {}
+        self.methods = {}
         self.db = sql.connect("{0}.db".format(dbname))
 
     def start(self):
@@ -23,9 +24,8 @@ class GameServer(object):
         if path in self.endpoints:
             endpoint = self.endpoints[path]
             print("Accepting request on known path: {0}".format(path))
-            clazz = endpoint['class']
-            if clazz is not None:
-                consumer = clazz(path, socket, endpoint["methods"])
+            if endpoint is not None:
+                consumer = endpoint(path, socket, self.methods[endpoint.__name__])
                 await consumer.handle()
             else:
                 print("Invalid endpoint")
@@ -35,24 +35,27 @@ class GameServer(object):
 
     def _create_endpoint_if_not_exists(self, path):
         if path not in self.endpoints:
-            self.endpoints[path] = {"class": None, "methods": {}}
+            self.endpoints[path] = None
 
     def endpoint(self, path):
         def handler(clazz: Endpoint.__class__):
             if issubclass(clazz, Endpoint):
                 self._create_endpoint_if_not_exists(path)
-                self.endpoints[path]["class"] = clazz
+                self.endpoints[path] = clazz
                 print("Adding path {0} with endpoint {1}".format(path, clazz.__name__))
             else:
                 print("Not adding path {0} with endpoint {1}. Reason: No endpoint.".format(path, clazz.__name__))
-
         return handler
 
-    def method(self, path, *argv):
-        def handler(func: FunctionType):
-            self._create_endpoint_if_not_exists(path)
-            self.endpoints[path]["methods"][func.__name__] = {"callable": func, "required": argv}
+    def _create_methods_if_not_exists(self, clazz):
+        if clazz not in self.methods:
+            self.methods[clazz] = {}
 
+    def method(self, *argv):
+        def handler(func: FunctionType):
+            clazz = func.__qualname__.rsplit('.', 1)[0]
+            self._create_methods_if_not_exists(clazz)
+            self.methods[clazz][func.__name__] = {"callable": func, "required": argv}
         return handler
 
 
