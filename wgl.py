@@ -25,7 +25,7 @@ class GameServer(object):
             endpoint = self.endpoints[path]
             print("Accepting request on known path: {0}".format(path))
             if endpoint is not None:
-                consumer = endpoint(path, socket, self.methods[endpoint.__name__])
+                consumer = endpoint(path, socket, self.methods[endpoint.__qualname__])
                 await consumer.handle()
             else:
                 print("Invalid endpoint")
