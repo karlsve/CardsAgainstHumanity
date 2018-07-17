@@ -1,51 +1,65 @@
-from wgl import Endpoint
-from wgl import GameServer
+from datetime import datetime
 
-cah = GameServer("cah", "localhost", 8765)
+from wsl import Endpoint
+from wsl import WebSocketServer
+
+cah_ws = WebSocketServer("localhost", 8765)
 matches = []
 
 
-@cah.endpoint("/matches")
+@cah_ws.endpoint("/matches")
 class Matches(Endpoint):
-
-    @cah.method()
+    @cah_ws.method()
     async def list(self, gm):
         await self.send(matches)
 
-    @cah.method("MatchConfig")
+    @cah_ws.method("matchConfig")
     async def create(self, gm):
-        gc = gm["MatchConfig"]
-        id = len(matches)
-        matches.insert(id, {"config": gc, "id": id})
-        await self.send({"type": "match_created", "id": id})
+        mc = gm["matchConfig"]
+        mid = len(matches)
+        match = {
+            "config": mc,
+            "player": [],
+            "deck": {},
+            "id": mid,
+            "creation_time": datetime.now().time()
+        }
+        matches.insert(mid, match)
+        await self.send({"type": "match_created", "id": mid})
 
 
-@cah.endpoint("/match")
+@cah_ws.endpoint("/match")
 class Match(Endpoint):
-    @cah.method("id")
+    @cah_ws.method("id", "user")
     async def connect(self, gm):
         if 0 <= gm["id"] < len(matches):
-            await self.send(matches[gm["id"]])
+            match = matches[gm["id"]]
+            u = {
+                "config": gm["user"],
+                "socket": self.socket
+            }
+            match["player"].append(u)
+            await self.send({"type": "connected", "match": match})
         else:
             await self.send({"error": "Match {0} not found.".format(gm["id"])})
 
 
-@cah.endpoint("/decks")
+@cah_ws.endpoint("/decks")
 class Decks(Endpoint):
     async def list(self, gm):
         pass
 
 
-@cah.endpoint("/deck")
+@cah_ws.endpoint("/deck")
 class Deck(Endpoint):
-    @cah.method("id")
+    @cah_ws.method("id")
     async def get(self, gm):
         print(gm["id"])
         pass
 
-    @cah.method("DeckConfig")
+    @cah_ws.method("deckConfig")
     async def create(self, gm):
         pass
 
 
-cah.start()
+cah_ws.start()

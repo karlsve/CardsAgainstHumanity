@@ -2,7 +2,7 @@
 A simple CardsAgainstHumanity implementation in python to act as a websocket server for a corresponding AngularJS App.
 
 ## wgl.py
-This is the websocket and database handling implementation.
+This is the websocket implementation.
 
 Sample usage
 ```python
@@ -10,8 +10,8 @@ import asyncio
 from wgl import GameServer
 from wgl import Endpoint
 
-someApp = GameServer("cah", "localhost", 8765) 
-# GameServer(dbname, ip/hostname, port)
+someApp = WSServer("localhost", 8765)
+# GameServer(ip/hostname, port)
 
 @someApp.endpoint("/somepath")
 class SomeEndpoint(Endpoint):
